@@ -1,0 +1,344 @@
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font-sans); }
+
+.app { display: grid; grid-template-columns: 220px 1fr; min-height: 600px; border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); overflow: hidden; background: var(--color-background-primary); }
+
+.sidebar { background: var(--color-background-secondary); border-right: 0.5px solid var(--color-border-tertiary); padding: 16px 0; display: flex; flex-direction: column; gap: 4px; }
+.sidebar-header { padding: 0 16px 12px; border-bottom: 0.5px solid var(--color-border-tertiary); margin-bottom: 8px; }
+.sidebar-header .org { font-size: 13px; font-weight: 500; color: var(--color-text-primary); }
+.sidebar-header .status { font-size: 11px; color: var(--color-text-secondary); margin-top: 2px; }
+
+.nav-section { padding: 8px 16px 4px; font-size: 11px; color: var(--color-text-tertiary); letter-spacing: 0.06em; text-transform: uppercase; }
+
+.nav-item { display: flex; align-items: center; gap: 8px; padding: 6px 16px; font-size: 13px; color: var(--color-text-secondary); cursor: pointer; transition: all 0.15s; }
+.nav-item:hover { background: var(--color-background-primary); color: var(--color-text-primary); }
+.nav-item.active { background: var(--color-background-primary); color: var(--color-text-primary); font-weight: 500; border-left: 2px solid #378ADD; }
+.nav-item .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.nav-item .badge { margin-left: auto; font-size: 11px; background: var(--color-background-info); color: var(--color-text-info); border-radius: 10px; padding: 1px 6px; }
+
+.main { display: flex; flex-direction: column; overflow: hidden; }
+
+.topbar { display: flex; align-items: center; gap: 12px; padding: 12px 20px; border-bottom: 0.5px solid var(--color-border-tertiary); }
+.topbar-title { font-size: 15px; font-weight: 500; color: var(--color-text-primary); }
+.topbar-subtitle { font-size: 12px; color: var(--color-text-secondary); margin-left: 4px; }
+.topbar-actions { margin-left: auto; display: flex; gap: 8px; }
+.btn { font-size: 12px; padding: 5px 12px; border-radius: var(--border-radius-md); border: 0.5px solid var(--color-border-secondary); background: transparent; color: var(--color-text-primary); cursor: pointer; transition: background 0.15s; }
+.btn:hover { background: var(--color-background-secondary); }
+.btn.primary { background: #378ADD; color: #fff; border-color: #378ADD; }
+.btn.primary:hover { background: #185FA5; }
+
+.content { padding: 20px; overflow-y: auto; flex: 1; }
+
+.stats-row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 20px; }
+.stat-card { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 14px 16px; }
+.stat-label { font-size: 11px; color: var(--color-text-secondary); margin-bottom: 6px; }
+.stat-value { font-size: 22px; font-weight: 500; color: var(--color-text-primary); line-height: 1; }
+.stat-delta { font-size: 11px; margin-top: 4px; }
+.stat-delta.up { color: var(--color-text-success); }
+.stat-delta.warn { color: var(--color-text-warning); }
+
+.section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.section-title { font-size: 13px; font-weight: 500; color: var(--color-text-primary); }
+
+.channel-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-bottom: 24px; }
+.channel-card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 14px 16px; cursor: pointer; transition: border-color 0.15s; }
+.channel-card:hover { border-color: var(--color-border-primary); }
+.channel-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 10px; }
+.channel-name { font-size: 13px; font-weight: 500; color: var(--color-text-primary); }
+.channel-tag { font-size: 11px; padding: 2px 8px; border-radius: 10px; }
+.tag-eng { background: #E6F1FB; color: #185FA5; }
+.tag-design { background: #EEEDFE; color: #534AB7; }
+.tag-product { background: #E1F5EE; color: #0F6E56; }
+.tag-marketing { background: #FAECE7; color: #993C1D; }
+.tag-ops { background: #FAEEDA; color: #854F0B; }
+
+.channel-meta { font-size: 11px; color: var(--color-text-secondary); margin-bottom: 8px; }
+.channel-owners { display: flex; gap: -4px; align-items: center; margin-bottom: 8px; }
+.avatar { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 500; border: 1.5px solid var(--color-background-primary); margin-right: -6px; }
+.avatar-blue { background: #B5D4F4; color: #0C447C; }
+.avatar-purple { background: #CECBF6; color: #3C3489; }
+.avatar-teal { background: #9FE1CB; color: #085041; }
+.avatar-coral { background: #F5C4B3; color: #712B13; }
+.avatar-green { background: #C0DD97; color: #27500A; }
+.avatar-amber { background: #FAC775; color: #633806; }
+.owner-label { font-size: 11px; color: var(--color-text-secondary); margin-left: 12px; }
+
+.progress-bar { height: 4px; border-radius: 2px; background: var(--color-border-tertiary); overflow: hidden; }
+.progress-fill { height: 100%; border-radius: 2px; transition: width 0.4s; }
+.fill-blue { background: #378ADD; }
+.fill-green { background: #639922; }
+.fill-amber { background: #BA7517; }
+.fill-coral { background: #D85A30; }
+.fill-purple { background: #7F77DD; }
+
+.progress-label { display: flex; justify-content: space-between; font-size: 10px; color: var(--color-text-tertiary); margin-top: 4px; }
+
+.members-table { width: 100%; border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); overflow: hidden; }
+.members-table table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.members-table th { text-align: left; font-size: 11px; font-weight: 500; color: var(--color-text-secondary); padding: 10px 14px; background: var(--color-background-secondary); border-bottom: 0.5px solid var(--color-border-tertiary); }
+.members-table td { padding: 10px 14px; border-bottom: 0.5px solid var(--color-border-tertiary); color: var(--color-text-primary); vertical-align: middle; }
+.members-table tr:last-child td { border-bottom: none; }
+.member-name { display: flex; align-items: center; gap: 8px; }
+.status-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.dot-online { background: #639922; }
+.dot-away { background: #BA7517; }
+.dot-offline { background: var(--color-border-secondary); }
+.channel-pills { display: flex; flex-wrap: wrap; gap: 4px; }
+.pill { font-size: 11px; padding: 2px 7px; border-radius: 10px; background: var(--color-background-secondary); color: var(--color-text-secondary); border: 0.5px solid var(--color-border-tertiary); }
+.role-badge { font-size: 11px; padding: 2px 8px; border-radius: 10px; }
+.role-lead { background: #E6F1FB; color: #185FA5; }
+.role-member { background: var(--color-background-secondary); color: var(--color-text-secondary); }
+.role-pm { background: #E1F5EE; color: #0F6E56; }
+.tasks-count { font-weight: 500; }
+.tasks-open { color: #378ADD; }
+
+.view-tabs { display: flex; gap: 2px; border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); padding: 2px; background: var(--color-background-secondary); }
+.view-tab { font-size: 12px; padding: 4px 12px; border-radius: 6px; cursor: pointer; color: var(--color-text-secondary); transition: all 0.15s; border: none; background: transparent; }
+.view-tab.active { background: var(--color-background-primary); color: var(--color-text-primary); font-weight: 500; }
+
+.alert-strip { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: var(--border-radius-md); background: #FAEEDA; border: 0.5px solid #FAC775; font-size: 12px; color: #633806; margin-bottom: 16px; }
+.alert-strip .alert-icon { font-size: 14px; }
+
+.channel-detail-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 100; align-items: center; justify-content: center; }
+.channel-detail-overlay.open { display: flex; }
+</style>
+
+<div class="app">
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <div class="org">Acme Corp Teams</div>
+      <div class="status">12 members · 8 channels</div>
+    </div>
+
+    <div class="nav-section">Views</div>
+    <div class="nav-item active" onclick="showView('overview')">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" rx="1.5" fill="currentColor" opacity="0.8"/><rect x="9" y="1" width="6" height="6" rx="1.5" fill="currentColor" opacity="0.8"/><rect x="1" y="9" width="6" height="6" rx="1.5" fill="currentColor" opacity="0.4"/><rect x="9" y="9" width="6" height="6" rx="1.5" fill="currentColor" opacity="0.4"/></svg>
+      Overview
+    </div>
+    <div class="nav-item" onclick="showView('members')">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="6" cy="5" r="3" fill="currentColor" opacity="0.8"/><path d="M1 13c0-2.76 2.24-5 5-5s5 2.24 5 5" stroke="currentColor" stroke-width="1.5" fill="none" opacity="0.8"/><circle cx="12" cy="5" r="2.2" fill="currentColor" opacity="0.4"/><path d="M14 13c0-2-1.34-3.7-3.2-4.28" stroke="currentColor" stroke-width="1.5" fill="none" opacity="0.4"/></svg>
+      Team Members
+    </div>
+    <div class="nav-item" onclick="showView('tasks')">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.2" fill="none" opacity="0.6"/><path d="M4 8l2.5 2.5L12 5" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>
+      Task Ownership
+      <span class="badge">5</span>
+    </div>
+
+    <div class="nav-section" style="margin-top:8px;">Channels</div>
+    <div class="nav-item" onclick="filterChannel('eng')"><span class="dot" style="background:#B5D4F4"></span> engineering</div>
+    <div class="nav-item" onclick="filterChannel('design')"><span class="dot" style="background:#CECBF6"></span> design</div>
+    <div class="nav-item" onclick="filterChannel('product')"><span class="dot" style="background:#9FE1CB"></span> product</div>
+    <div class="nav-item" onclick="filterChannel('marketing')"><span class="dot" style="background:#F5C4B3"></span> marketing</div>
+    <div class="nav-item" onclick="filterChannel('ops')"><span class="dot" style="background:#FAC775"></span> operations</div>
+    <div class="nav-item" style="margin-top:8px;" onclick="sendPrompt('Help me create a new Teams channel structure for my team')">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.2" opacity="0.5"/><path d="M8 5v6M5 8h6" stroke="currentColor" stroke-width="1.5"/></svg>
+      Add channel ↗
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <span class="topbar-title" id="view-title">Team Overview</span>
+      <span class="topbar-subtitle" id="view-subtitle">Week 11 · March 2026</span>
+      <div class="topbar-actions">
+        <div class="view-tabs">
+          <button class="view-tab active" onclick="switchTab(this,'overview')">Channels</button>
+          <button class="view-tab" onclick="switchTab(this,'members')">Members</button>
+          <button class="view-tab" onclick="switchTab(this,'tasks')">Tasks</button>
+        </div>
+        <button class="btn primary" onclick="sendPrompt('Help me set up Microsoft Teams channels and naming conventions for a growing team')">New channel ↗</button>
+      </div>
+    </div>
+
+    <div class="content" id="main-content">
+
+      <div id="overview-view">
+        <div class="alert-strip">
+          <span class="alert-icon">⚠</span>
+          <span><strong>3 tasks overdue</strong> across engineering and product channels — 2 members unassigned</span>
+          <button class="btn" style="margin-left:auto; font-size:11px; padding:3px 10px;" onclick="showView('tasks')">Review</button>
+        </div>
+
+        <div class="stats-row">
+          <div class="stat-card"><div class="stat-label">Active channels</div><div class="stat-value">8</div><div class="stat-delta up">+2 this month</div></div>
+          <div class="stat-card"><div class="stat-label">Team members</div><div class="stat-value">12</div><div class="stat-delta up">+3 this month</div></div>
+          <div class="stat-card"><div class="stat-label">Open tasks</div><div class="stat-value">24</div><div class="stat-delta warn">5 overdue</div></div>
+          <div class="stat-card"><div class="stat-label">Avg. response time</div><div class="stat-value">1.4h</div><div class="stat-delta up">-18 min vs last week</div></div>
+        </div>
+
+        <div class="section-header">
+          <span class="section-title">Channel breakdown</span>
+          <button class="btn" onclick="sendPrompt('What is the recommended channel structure for a software product team in Microsoft Teams?')" style="font-size:11px;">Best practices ↗</button>
+        </div>
+
+        <div class="channel-grid">
+          <div class="channel-card">
+            <div class="channel-top"><span class="channel-name"># engineering</span><span class="channel-tag tag-eng">Engineering</span></div>
+            <div class="channel-meta">4 members · 12 open tasks · Last active 10m ago</div>
+            <div class="channel-owners">
+              <div class="avatar avatar-blue">AL</div>
+              <div class="avatar avatar-purple">MK</div>
+              <div class="avatar avatar-teal">SR</div>
+              <div class="avatar avatar-coral">JD</div>
+              <span class="owner-label">Lead: Alex L.</span>
+            </div>
+            <div class="progress-bar"><div class="progress-fill fill-blue" style="width:68%"></div></div>
+            <div class="progress-label"><span>Sprint progress</span><span>68%</span></div>
+          </div>
+          <div class="channel-card">
+            <div class="channel-top"><span class="channel-name"># design</span><span class="channel-tag tag-design">Design</span></div>
+            <div class="channel-meta">3 members · 5 open tasks · Last active 45m ago</div>
+            <div class="channel-owners">
+              <div class="avatar avatar-purple">TW</div>
+              <div class="avatar avatar-green">NP</div>
+              <span class="owner-label">Lead: Tania W.</span>
+            </div>
+            <div class="progress-bar"><div class="progress-fill fill-purple" style="width:82%"></div></div>
+            <div class="progress-label"><span>Sprint progress</span><span>82%</span></div>
+          </div>
+          <div class="channel-card">
+            <div class="channel-top"><span class="channel-name"># product</span><span class="channel-tag tag-product">Product</span></div>
+            <div class="channel-meta">3 members · 4 open tasks · Last active 2h ago</div>
+            <div class="channel-owners">
+              <div class="avatar avatar-teal">RB</div>
+              <div class="avatar avatar-amber">LM</div>
+              <span class="owner-label">Lead: Rachel B.</span>
+            </div>
+            <div class="progress-bar"><div class="progress-fill fill-green" style="width:55%"></div></div>
+            <div class="progress-label"><span>Sprint progress</span><span>55%</span></div>
+          </div>
+          <div class="channel-card">
+            <div class="channel-top"><span class="channel-name"># marketing</span><span class="channel-tag tag-marketing">Marketing</span></div>
+            <div class="channel-meta">2 members · 3 open tasks · Last active 3h ago</div>
+            <div class="channel-owners">
+              <div class="avatar avatar-coral">CF</div>
+              <div class="avatar avatar-amber">DV</div>
+              <span class="owner-label">Lead: Chris F.</span>
+            </div>
+            <div class="progress-bar"><div class="progress-fill fill-coral" style="width:40%"></div></div>
+            <div class="progress-label"><span>Campaign progress</span><span>40%</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="members-view" style="display:none;">
+        <div class="stats-row" style="grid-template-columns: repeat(3, minmax(0,1fr));">
+          <div class="stat-card"><div class="stat-label">Online now</div><div class="stat-value">7</div></div>
+          <div class="stat-card"><div class="stat-label">Channel leads</div><div class="stat-value">4</div></div>
+          <div class="stat-card"><div class="stat-label">Unassigned tasks</div><div class="stat-value" style="color:#BA7517">2</div></div>
+        </div>
+        <div class="members-table">
+          <table>
+            <thead><tr><th>Member</th><th>Role</th><th>Channels</th><th>Open tasks</th></tr></thead>
+            <tbody>
+              <tr><td><div class="member-name"><div class="avatar avatar-blue" style="margin-right:0">AL</div><span>Alex Larsson</span><span class="status-dot dot-online"></span></div></td><td><span class="role-badge role-lead">Lead</span></td><td><div class="channel-pills"><span class="pill"># engineering</span></div></td><td class="tasks-count tasks-open">5</td></tr>
+              <tr><td><div class="member-name"><div class="avatar avatar-purple" style="margin-right:0">MK</div><span>Mia Kovacs</span><span class="status-dot dot-online"></span></div></td><td><span class="role-badge role-member">Member</span></td><td><div class="channel-pills"><span class="pill"># engineering</span></div></td><td class="tasks-count tasks-open">3</td></tr>
+              <tr><td><div class="member-name"><div class="avatar avatar-teal" style="margin-right:0">SR</div><span>Sam Rivera</span><span class="status-dot dot-away"></span></div></td><td><span class="role-badge role-member">Member</span></td><td><div class="channel-pills"><span class="pill"># engineering</span></div></td><td class="tasks-count tasks-open">2</td></tr>
+              <tr><td><div class="member-name"><div class="avatar avatar-purple" style="margin-right:0">TW</div><span>Tania Wolf</span><span class="status-dot dot-online"></span></div></td><td><span class="role-badge role-lead">Lead</span></td><td><div class="channel-pills"><span class="pill"># design</span></div></td><td class="tasks-count tasks-open">2</td></tr>
+              <tr><td><div class="member-name"><div class="avatar avatar-green" style="margin-right:0">NP</div><span>Nina Park</span><span class="status-dot dot-online"></span></div></td><td><span class="role-badge role-member">Member</span></td><td><div class="channel-pills"><span class="pill"># design</span><span class="pill"># product</span></div></td><td class="tasks-count tasks-open">1</td></tr>
+              <tr><td><div class="member-name"><div class="avatar avatar-teal" style="margin-right:0">RB</div><span>Rachel Bello</span><span class="status-dot dot-online"></span></div></td><td><span class="role-badge role-pm">PM</span></td><td><div class="channel-pills"><span class="pill"># product</span></div></td><td class="tasks-count tasks-open">4</td></tr>
+              <tr><td><div class="member-name"><div class="avatar avatar-coral" style="margin-right:0">CF</div><span>Chris Forde</span><span class="status-dot dot-away"></span></div></td><td><span class="role-badge role-lead">Lead</span></td><td><div class="channel-pills"><span class="pill"># marketing</span></div></td><td class="tasks-count tasks-open">2</td></tr>
+              <tr><td><div class="member-name"><div class="avatar avatar-amber" style="margin-right:0">DV</div><span>Diana Voss</span><span class="status-dot dot-offline"></span></div></td><td><span class="role-badge role-member">Member</span></td><td><div class="channel-pills"><span class="pill"># marketing</span><span class="pill"># operations</span></div></td><td class="tasks-count tasks-open">1</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="margin-top:14px; display:flex; gap:8px;">
+          <button class="btn" onclick="sendPrompt('What is the best way to assign channel owners and responsibilities in Microsoft Teams for a 12-person team?')">Ownership strategy ↗</button>
+          <button class="btn" onclick="sendPrompt('How should I onboard new team members into our Microsoft Teams channels?')">Onboarding guide ↗</button>
+        </div>
+      </div>
+
+      <div id="tasks-view" style="display:none;">
+        <div class="alert-strip" style="background:#FCEBEB; border-color:#F7C1C1; color:#501313;">
+          <span class="alert-icon">!</span>
+          <span><strong>5 tasks are overdue.</strong> Review assignments and redistribute if needed.</span>
+        </div>
+        <div class="members-table">
+          <table>
+            <thead><tr><th>Task</th><th>Assigned to</th><th>Channel</th><th>Due</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr>
+                <td>API rate limiting spec</td>
+                <td><div class="member-name"><div class="avatar avatar-blue" style="margin-right:0">AL</div><span>Alex L.</span></div></td>
+                <td><span class="channel-tag tag-eng" style="font-size:11px"># engineering</span></td>
+                <td style="font-size:12px; color:var(--color-text-secondary)">Mar 14</td>
+                <td><span style="font-size:11px; padding:2px 8px; border-radius:10px; background:#FCEBEB; color:#A32D2D">Overdue</span></td>
+              </tr>
+              <tr>
+                <td>Dashboard redesign review</td>
+                <td><div class="member-name"><div class="avatar avatar-purple" style="margin-right:0">TW</div><span>Tania W.</span></div></td>
+                <td><span class="channel-tag tag-design" style="font-size:11px"># design</span></td>
+                <td style="font-size:12px; color:var(--color-text-secondary)">Mar 17</td>
+                <td><span style="font-size:11px; padding:2px 8px; border-radius:10px; background:#FAEEDA; color:#854F0B">In review</span></td>
+              </tr>
+              <tr>
+                <td>Q2 roadmap draft</td>
+                <td><div class="member-name"><div class="avatar avatar-teal" style="margin-right:0">RB</div><span>Rachel B.</span></div></td>
+                <td><span class="channel-tag tag-product" style="font-size:11px"># product</span></td>
+                <td style="font-size:12px; color:var(--color-text-secondary)">Mar 20</td>
+                <td><span style="font-size:11px; padding:2px 8px; border-radius:10px; background:#E6F1FB; color:#185FA5">In progress</span></td>
+              </tr>
+              <tr>
+                <td>Launch email campaign</td>
+                <td><div class="member-name"><div class="avatar avatar-coral" style="margin-right:0">CF</div><span>Chris F.</span></div></td>
+                <td><span class="channel-tag tag-marketing" style="font-size:11px"># marketing</span></td>
+                <td style="font-size:12px; color:var(--color-text-secondary)">Mar 13</td>
+                <td><span style="font-size:11px; padding:2px 8px; border-radius:10px; background:#FCEBEB; color:#A32D2D">Overdue</span></td>
+              </tr>
+              <tr>
+                <td>Vendor contract renewal</td>
+                <td><div class="member-name"><div class="avatar avatar-amber" style="margin-right:0">DV</div><span>Diana V.</span></div></td>
+                <td><span class="channel-tag tag-ops" style="font-size:11px"># operations</span></td>
+                <td style="font-size:12px; color:var(--color-text-secondary)">Mar 22</td>
+                <td><span style="font-size:11px; padding:2px 8px; border-radius:10px; background:#EAF3DE; color:#3B6D11">On track</span></td>
+              </tr>
+              <tr>
+                <td>Auth flow bug fix</td>
+                <td><div class="member-name"><div class="avatar avatar-purple" style="margin-right:0">MK</div><span>Mia K.</span></div></td>
+                <td><span class="channel-tag tag-eng" style="font-size:11px"># engineering</span></td>
+                <td style="font-size:12px; color:var(--color-text-secondary)">Mar 15</td>
+                <td><span style="font-size:11px; padding:2px 8px; border-radius:10px; background:#FCEBEB; color:#A32D2D">Overdue</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="margin-top:14px; display:flex; gap:8px;">
+          <button class="btn" onclick="sendPrompt('How do I integrate Microsoft Planner or To Do with Teams channels for task tracking?')">Integrate Planner ↗</button>
+          <button class="btn" onclick="sendPrompt('What are best practices for managing task ownership across channels in Microsoft Teams?')">Task best practices ↗</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+function showView(v) {
+  document.getElementById('overview-view').style.display = v==='overview' ? '' : 'none';
+  document.getElementById('members-view').style.display = v==='members' ? '' : 'none';
+  document.getElementById('tasks-view').style.display = v==='tasks' ? '' : 'none';
+  var titles = {overview:'Team Overview', members:'Team Members', tasks:'Task Ownership'};
+  document.getElementById('view-title').textContent = titles[v];
+  document.querySelectorAll('.nav-item').forEach(function(el){ el.classList.remove('active'); });
+  document.querySelectorAll('.view-tab').forEach(function(el){ el.classList.remove('active'); });
+  var tabs = document.querySelectorAll('.view-tab');
+  if(v==='overview') tabs[0].classList.add('active');
+  if(v==='members') tabs[1].classList.add('active');
+  if(v==='tasks') tabs[2].classList.add('active');
+}
+function switchTab(el, v) {
+  document.querySelectorAll('.view-tab').forEach(function(t){ t.classList.remove('active'); });
+  el.classList.add('active');
+  showView(v);
+}
+function filterChannel(c) {
+  showView('overview');
+  document.querySelectorAll('.view-tab')[0].classList.add('active');
+  document.querySelectorAll('.view-tab')[1].classList.remove('active');
+  document.querySelectorAll('.view-tab')[2].classList.remove('active');
+  document.getElementById('view-subtitle').textContent = 'Filtered: # ' + c;
+}
+</script>
